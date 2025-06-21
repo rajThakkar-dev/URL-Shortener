@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c, #4facfe, #00f2fe);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px 35px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.15);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 35px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            border-radius: 2px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 18px 25px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            color: #333;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field:focus {
+            transform: scale(1.02);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .input-field::placeholder {
+            color: #999;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .generate-btn {
+            width: 100%;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+        }
+
+        .generate-btn:hover {
+            box-shadow: 0 15px 40px rgba(245, 87, 108, 0.6);
+        }
+
+        .result-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-text {
+            color: white;
+            font-size: 14px;
+            word-break: break-all;
+            margin-bottom: 15px;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+            padding: 10px 20px;
+            font-size: 14px;
+            box-shadow: 0 5px 15px rgba(252, 182, 159, 0.4);
+        }
+
+        .copy-btn:hover {
+            box-shadow: 0 8px 25px rgba(252, 182, 159, 0.6);
+        }
+
+        .floating-shapes {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 30%;
+            right: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 30px 25px;
+            }
+            
+            .title {
+                font-size: 2.2rem;
+            }
+            
+            .analytics-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <form method="post" action="/url">
+        <div class="card">
+            <h1 class="title">URL Shortener</h1>
+            
+            <div class="input-group">
+                <input type="url" name="url" class="input-field" id="urlInput" placeholder="Paste your long URL here..." required>
+            </div>
+            
+            <button class="btn generate-btn" type="submit" onclick="generateShortUrl()">
+                ✨ Generate Short URL
+            </button>
+            </form>
+
+            <% if (locals.id) { %>
+                <div class="result-section" style="display: block;" id="resultSection">
+                <div class="result-text" id="resultText"><strong>Original URL:</strong><br>
+                <span style="opacity: 0.8;"><%= locals.originalUrl %></span><br><br>
+                <strong>Shortened URL:</strong><br>
+                <span class="copy-url" style="color: #4facfe; font-weight: bold;">http://localhost:8000/url/<%= locals.id %></span></div>
+                <button type="button" class="btn copy-btn" onclick="copyToClipboard()">
+                    📋 Copy URL
+                </button>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        let lastGeneratedUrl = document.querySelector(".copy-url");
+
+        function generateShortUrl() {
+            const urlInput = document.getElementById('urlInput');
+            const resultSection = document.getElementById('resultSection');
+            const resultText = document.getElementById('resultText');
+            
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('Please enter a URL to shorten!');
+                return;
+            }
+            
+            if (!isValidUrl(url)) {
+                alert('Please enter a valid URL (e.g., https://example.com)');
+                return;
+            }
+            
+            // resultSection.style.display = 'block';
+            
+            // Add success animation
+            const generateBtn = document.querySelector('.generate-btn');
+            generateBtn.style.background = 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
+            generateBtn.textContent = '✅ URL Generated!';
+            
+            setTimeout(() => {
+                generateBtn.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+                generateBtn.textContent = '✨ Generate Short URL';
+            }, 2000);
+            
+        }
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        function copyToClipboard() {
+        if (lastGeneratedUrl.innerText) {
+                navigator.clipboard.writeText(lastGeneratedUrl.innerText).then(() => {
+                    const copyBtn = document.querySelector('.copy-btn');
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = '✅ Copied!';
+                    copyBtn.style.background = 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
+                    
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                        copyBtn.style.background = 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)';
+                    }, 2000);
+                }).catch(() => {
+                    alert('Failed to copy URL to clipboard');
+                });
+            }
+        }
+        
+        
+        // Add enter key support for input field
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateShortUrl();
+            }
+        });
+        
+        // Add subtle parallax effect to floating shapes
+        document.addEventListener('mousemove', function(e) {
+            const shapes = document.querySelectorAll('.shape');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            shapes.forEach((shape, index) => {
+                const speed = (index + 1) * 0.5;
+                const xOffset = (x - 0.5) * speed * 20;
+                const yOffset = (y - 0.5) * speed * 20;
+                shape.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
