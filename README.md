@@ -16,6 +16,6 @@ http://localhost:8000/url/analytics/<-shortId->
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB
 - **Frontend:** Generated via Claude AI (HTML/CSS/JavaScript)
-- **Tools:** Mongoose, shortid (or custom short code logic)
+- **Tools:** Mongoose, shortid
 
 
